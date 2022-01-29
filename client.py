@@ -1,4 +1,3 @@
-from email import message
 import json
 import requests
 
@@ -33,6 +32,7 @@ def generate_user_id():
             print()
         else:
             print(f'\n{Fore.LIGHTRED_EX}[HTTP ERROR] Could not generate user ID!')
+            return
     else:
         print(f'\n{Fore.LIGHTYELLOW_EX}[INFO] You can only generate one user ID per session!\n')
 
@@ -65,7 +65,8 @@ def propose_trip():
         if response.ok:
             print(f'\n{Fore.LIGHTGREEN_EX}[SUCCESS] You successfully proposed a trip!\n')
         else:
-            print(f'\n{Fore.LIGHTRED_EX}[HTTP ERROR] Could not perform propose trip!\n')
+            print(f'\n{Fore.LIGHTRED_EX}[HTTP ERROR] Could not propose trip!\n')
+            return
     else:
         print(f'\n{Fore.LIGHTYELLOW_EX}[INFO] You need a user ID in order to submit a proposal!')
 
@@ -73,7 +74,20 @@ def propose_trip():
 def display_proposals():
     print(f'\n{Fore.LIGHTMAGENTA_EX}Trips:\n')
     for proposal in proposals:
-        print(proposal)
+        proposal_dict = json.loads(proposal)
+        user_id = proposal_dict.get('user_id')
+        message_id = proposal_dict.get('message_id')
+        trip_location = proposal_dict.get('trip_location')
+        trip_date = proposal_dict.get('trip_date')
+        description = proposal_dict.get('description')
+        temp = proposal_dict.get('temp')
+
+        print(f'User ID: {user_id}')
+        print(f'Message ID: {message_id}')
+        print(f'Trip location: {trip_location}')
+        print(f'Trip date: {trip_date}')
+        print(f'Weather description: {description}')
+        print(f'Forecasted temperature: {temp} °C\n')
 
 
 def retrieve_proposals():
@@ -104,14 +118,15 @@ def retrieve_proposals():
                 proposal_dict['description'] = weather_data['description']
                 proposal_dict['temp'] = weather_data['temp']
             else:
-                print(f'\n{Fore.LIGHTRED_EX}[HTTP ERROR] Could not get weather data!')
+                print(f'\n{Fore.LIGHTRED_EX}[HTTP ERROR] Could not get weather data!\n')
+                return
 
             proposal_json = json.dumps(proposal_dict)
             proposals.append(proposal_json)
-            display_proposals()
+        display_proposals()
 
     else:
-        print(f'\n{Fore.LIGHTRED_EX}[HTTP ERROR] Could not generate message ID!')
+        print(f'\n{Fore.LIGHTRED_EX}[HTTP ERROR] Could not retrieve trip data!\n')
 
 
 def main():
