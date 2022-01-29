@@ -61,7 +61,7 @@ def propose_trip():
             'trip_date': date
         }
 
-        response = requests.post('http://localhost:8080/api/v1/propose-trip/', data=payload)
+        response = requests.post('http://localhost:8080/api/v1/trip/', data=payload)
         if response.ok:
             print(f'\n{Fore.LIGHTGREEN_EX}[SUCCESS] You successfully proposed a trip!\n')
         else:
@@ -84,7 +84,7 @@ def display_proposals():
 
         print(f'User ID: {user_id}')
         print(f'Message ID: {message_id}')
-        print(f'Trip location: {trip_location}')
+        print(f'Trip location: {trip_location.capitalize()}')
         print(f'Trip date: {trip_date}')
         print(f'Weather description: {description}')
         print(f'Forecasted temperature: {temp} °C\n')
@@ -122,7 +122,10 @@ def retrieve_proposals():
                 return
 
             proposal_json = json.dumps(proposal_dict)
-            proposals.append(proposal_json)
+            if proposal_json in proposals:
+                pass
+            else:
+                proposals.append(proposal_json)
         display_proposals()
 
     else:
