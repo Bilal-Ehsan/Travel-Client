@@ -9,6 +9,7 @@ from colorama import Fore
 colorama.init(autoreset=True)
 
 user_id = ''
+proposals = []
 
 
 def menu():
@@ -31,7 +32,7 @@ def generate_user_id():
             user_id = response_json['id']
             print()
         else:
-            print(f'\n{Fore.LIGHTRED_EX}[ERROR] Could not generate user ID! (HTTP error)')
+            print(f'\n{Fore.LIGHTRED_EX}[HTTP ERROR] Could not generate user ID!')
     else:
         print(f'\n{Fore.LIGHTYELLOW_EX}[INFO] You can only generate one user ID per session!\n')
 
@@ -42,7 +43,7 @@ def generate_message_id():
         response_json = json.loads(response.content)
         return response_json['id']
     else:
-        print(f'\n{Fore.LIGHTRED_EX}[ERROR] Could not generate message ID! (HTTP error)')
+        print(f'\n{Fore.LIGHTRED_EX}[HTTP ERROR] Could not generate message ID!')
 
 
 def propose_trip():
@@ -64,24 +65,53 @@ def propose_trip():
         if response.ok:
             print(f'\n{Fore.LIGHTGREEN_EX}[SUCCESS] You successfully proposed a trip!\n')
         else:
-            print(f'\n{Fore.LIGHTRED_EX}[ERROR] Could not perform propose trip! (HTTP error)!\n')
+            print(f'\n{Fore.LIGHTRED_EX}[HTTP ERROR] Could not perform propose trip!\n')
     else:
         print(f'\n{Fore.LIGHTYELLOW_EX}[INFO] You need a user ID in order to submit a proposal!')
 
 
-# NOTE: Suitable order of operations:
-# 1. Loop through response array
-# 2. Check to see that the response hasn't already been parsed (can store the raw response in a text file and check if it's there)
-# 3. Get the weather data for each response
-# 4. Add the individual proposals to a JSON file
-# 5. Once loop is complete, display all stored proposals
+def display_proposals():
+    print(f'\n{Fore.LIGHTMAGENTA_EX}Trips:\n')
+    for proposal in proposals:
+        print(proposal)
+
+
 def retrieve_proposals():
     response = requests.get('http://localhost:8080/api/v1/trip/')
     if response.ok:
         response_json = json.loads(response.content)
-        # Example response - ['user_id=420&message_id=317&trip_location=michigan&trip_date=2022-02-05', 'user_id=420&message_id=69&trip_location=tokyo&trip_date=2022-02-07']
+        for i in response_json:
+            proposal_data = i.split('&')
+            proposal = []
+            for i in proposal_data:
+                proposal_values = i.split('=')
+                proposal.append(proposal_values)
+
+            proposal_dict = {
+                'user_id': proposal[0][1],
+                'message_id': proposal[1][1],
+                'trip_location': proposal[2][1],
+                'trip_date': proposal[3][1]
+            }
+
+            location = proposal_dict.get('trip_location')
+            date = proposal_dict.get('trip_date')
+
+            # Get corresponding weather data for each proposal
+            response = requests.get(f'http://localhost:8080/api/v1/forecast?location={location}&date={date}')
+            if response.ok:
+                weather_data = json.loads(response.content)
+                proposal_dict['description'] = weather_data['description']
+                proposal_dict['temp'] = weather_data['temp']
+            else:
+                print(f'\n{Fore.LIGHTRED_EX}[HTTP ERROR] Could not get weather data!')
+
+            proposal_json = json.dumps(proposal_dict)
+            proposals.append(proposal_json)
+            display_proposals()
+
     else:
-        print(f'\n{Fore.LIGHTRED_EX}[ERROR] Could not generate message ID! (HTTP error)')
+        print(f'\n{Fore.LIGHTRED_EX}[HTTP ERROR] Could not generate message ID!')
 
 
 def main():
@@ -102,7 +132,6 @@ def main():
         elif user_input == '3':
             retrieve_proposals()
         elif user_input == '6':
-            # TODO: Clear JSON and text files for new session
             print(f'\n{Fore.LIGHTMAGENTA_EX}Bye!\n')
             break
 
