@@ -132,6 +132,27 @@ def retrieve_proposals():
     display_proposals()
 
 
+def declare_intent():
+    if user_id != '':
+        organised_by = input('\nWho was the trip organised by? ')
+        message_id = input('What is the message ID of the particular trip? ')
+
+        payload = {
+            'organised_by': organised_by,
+            'interested_user': user_id,
+            'message_id': message_id 
+        }
+
+        response = requests.post('http://localhost:8080/api/v1/intent/', data=payload)
+        if response.ok:
+            print(f'\n{Fore.LIGHTGREEN_EX}[SUCCESS] You successfully declared interest for a trip!\n')
+        else:
+            print(f'\n{Fore.LIGHTRED_EX}[HTTP ERROR] Could not declare intent!\n')
+            return
+    else:
+        print(f'\n{Fore.LIGHTYELLOW_EX}[INFO] You need a user ID in order to declare interest in a trip!')
+
+
 def main():
     print(Fore.LIGHTGREEN_EX + 'Welcome to the travel service client!')
 
