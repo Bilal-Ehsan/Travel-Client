@@ -82,7 +82,7 @@ def display_proposals():
         description = proposal_dict.get('description')
         temp = proposal_dict.get('temp')
 
-        print(f'User ID: {user_id}')
+        print(f'Organised by: {user_id}')
         print(f'Message ID: {message_id}')
         print(f'Trip location: {trip_location.capitalize()}')
         print(f'Trip date: {trip_date}')
@@ -92,44 +92,44 @@ def display_proposals():
 
 def retrieve_proposals():
     response = requests.get('http://localhost:8080/api/v1/trip/')
-    if response.ok:
-        response_json = json.loads(response.content)
-        for i in response_json:
-            proposal_data = i.split('&')
-            proposal = []
-            for i in proposal_data:
-                proposal_values = i.split('=')
-                proposal.append(proposal_values)
-
-            proposal_dict = {
-                'user_id': proposal[0][1],
-                'message_id': proposal[1][1],
-                'trip_location': proposal[2][1],
-                'trip_date': proposal[3][1]
-            }
-
-            location = proposal_dict.get('trip_location')
-            date = proposal_dict.get('trip_date')
-
-            # Get corresponding weather data for each proposal
-            response = requests.get(f'http://localhost:8080/api/v1/forecast?location={location}&date={date}')
-            if response.ok:
-                weather_data = json.loads(response.content)
-                proposal_dict['description'] = weather_data['description']
-                proposal_dict['temp'] = weather_data['temp']
-            else:
-                print(f'\n{Fore.LIGHTRED_EX}[HTTP ERROR] Could not get weather data!\n')
-                return
-
-            proposal_json = json.dumps(proposal_dict)
-            if proposal_json in proposals:
-                pass
-            else:
-                proposals.append(proposal_json)
-        display_proposals()
-
-    else:
+    if not response.ok:
         print(f'\n{Fore.LIGHTRED_EX}[HTTP ERROR] Could not retrieve trip data!\n')
+        return
+
+    response_json = json.loads(response.content)
+    for i in response_json:
+        proposal_data = i.split('&')
+        proposal = []
+        for i in proposal_data:
+            proposal_values = i.split('=')
+            proposal.append(proposal_values)
+
+        proposal_dict = {
+            'user_id': proposal[0][1],
+            'message_id': proposal[1][1],
+            'trip_location': proposal[2][1],
+            'trip_date': proposal[3][1]
+        }
+
+        location = proposal_dict.get('trip_location')
+        date = proposal_dict.get('trip_date')
+
+        # Get corresponding weather data for each proposal
+        response = requests.get(f'http://localhost:8080/api/v1/forecast?location={location}&date={date}')
+        if response.ok:
+            weather_data = json.loads(response.content)
+            proposal_dict['description'] = weather_data['description']
+            proposal_dict['temp'] = weather_data['temp']
+        else:
+            print(f'\n{Fore.LIGHTRED_EX}[HTTP ERROR] Could not get weather data!\n')
+            return
+
+        proposal_json = json.dumps(proposal_dict)
+        if proposal_json in proposals:
+            pass
+        else:
+            proposals.append(proposal_json)
+    display_proposals()
 
 
 def main():
@@ -149,6 +149,8 @@ def main():
             propose_trip()
         elif user_input == '3':
             retrieve_proposals()
+        elif user_input == '4':
+            declare_intent()
         elif user_input == '6':
             print(f'\n{Fore.LIGHTMAGENTA_EX}Bye!\n')
             break
