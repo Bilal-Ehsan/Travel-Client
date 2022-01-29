@@ -69,6 +69,16 @@ def propose_trip():
         print(f'\n{Fore.LIGHTYELLOW_EX}[INFO] You need a user ID in order to submit a proposal!')
 
 
+def retrieve_proposals():
+    response = requests.get('http://localhost:8080/api/v1/trip/')
+    if response.ok:
+        response_json = json.loads(response.content)
+        # TODO: Need to parse and display data that looks like the following:
+        # ['user_id=420&message_id=317&trip_location=michigan&trip_date=2022-02-05', 'user_id=420&message_id=69&trip_location=tokyo&trip_date=2022-02-07']
+    else:
+        print(f'\n{Fore.LIGHTRED_EX}[ERROR] Could not generate message ID! (HTTP error)')
+
+
 def main():
     print(Fore.LIGHTGREEN_EX + 'Welcome to the travel service client!')
 
@@ -84,6 +94,8 @@ def main():
             generate_user_id()
         elif user_input == '2':
             propose_trip()
+        elif user_input == '3':
+            retrieve_proposals()
         elif user_input == '6':
             print(f'\n{Fore.LIGHTMAGENTA_EX}Bye!\n')
             break
