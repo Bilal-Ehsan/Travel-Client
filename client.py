@@ -69,12 +69,17 @@ def propose_trip():
         print(f'\n{Fore.LIGHTYELLOW_EX}[INFO] You need a user ID in order to submit a proposal!')
 
 
+# NOTE: Suitable order of operations:
+# 1. Loop through response array
+# 2. Check to see that the response hasn't already been parsed (can store the raw response in a text file and check if it's there)
+# 3. Get the weather data for each response
+# 4. Add the individual proposals to a JSON file
+# 5. Once loop is complete, display all stored proposals
 def retrieve_proposals():
     response = requests.get('http://localhost:8080/api/v1/trip/')
     if response.ok:
         response_json = json.loads(response.content)
-        # TODO: Need to parse and display data that looks like the following:
-        # ['user_id=420&message_id=317&trip_location=michigan&trip_date=2022-02-05', 'user_id=420&message_id=69&trip_location=tokyo&trip_date=2022-02-07']
+        # Example response - ['user_id=420&message_id=317&trip_location=michigan&trip_date=2022-02-05', 'user_id=420&message_id=69&trip_location=tokyo&trip_date=2022-02-07']
     else:
         print(f'\n{Fore.LIGHTRED_EX}[ERROR] Could not generate message ID! (HTTP error)')
 
@@ -97,6 +102,7 @@ def main():
         elif user_input == '3':
             retrieve_proposals()
         elif user_input == '6':
+            # TODO: Clear JSON and text files for new session
             print(f'\n{Fore.LIGHTMAGENTA_EX}Bye!\n')
             break
 
