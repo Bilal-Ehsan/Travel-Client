@@ -127,9 +127,7 @@ def retrieve_proposals():
             return
 
         proposal_json = json.dumps(proposal_dict)
-        if proposal_json in proposals:
-            pass
-        else:
+        if proposal_json not in proposals:
             proposals.append(proposal_json)
     display_proposals()
 
@@ -157,13 +155,24 @@ def declare_intent():
 
 def display_interests():
     print(f'\n{Fore.LIGHTMAGENTA_EX}Interested users:\n')
-    print(interests)  # TODO: Filter this to show interests with matching user IDs
+
+    # TODO: Filter this to show interests with matching user IDs
+    for intent in interests:
+        intent_dict = json.loads(intent)
+        organised_by = intent_dict.get('organised_by')
+        interested_user = intent_dict.get('interested_user')
+        message_id = intent_dict.get('message_id')
+
+        if organised_by == user_id:
+            print(f'Organised by: You')
+            print(f'Interested user: {interested_user}')
+            print(f'Message ID: {message_id}\n')
 
 
 def receive_intent_messages():
     response = requests.get('http://localhost:8080/api/v1/intent/')
     if not response.ok:
-        print(f'\n{Fore.LIGHTRED_EX}[HTTP ERROR] Could not retrieve trip data!\n')
+        print(f'\n{Fore.LIGHTRED_EX}[HTTP ERROR] Could not retrieve intent data!\n')
         return
 
     response_json = json.loads(response.content)
@@ -181,9 +190,7 @@ def receive_intent_messages():
         }
 
         intent_json = json.dumps(intent_dict)
-        if intent_json in proposals:
-            pass
-        else:
+        if intent_json not in interests:
             interests.append(intent_json)
     display_interests()
 
