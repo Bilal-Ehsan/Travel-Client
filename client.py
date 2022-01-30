@@ -9,6 +9,7 @@ colorama.init(autoreset=True)
 
 user_id = ''
 proposals = []
+interests = []
 
 
 def menu():
@@ -73,6 +74,7 @@ def propose_trip():
 
 def display_proposals():
     print(f'\n{Fore.LIGHTMAGENTA_EX}Trips:\n')
+
     for proposal in proposals:
         proposal_dict = json.loads(proposal)
         user_id = proposal_dict.get('user_id')
@@ -153,6 +155,39 @@ def declare_intent():
         print(f'\n{Fore.LIGHTYELLOW_EX}[INFO] You need a user ID in order to declare interest in a trip!')
 
 
+def display_interests():
+    print(f'\n{Fore.LIGHTMAGENTA_EX}Interested users:\n')
+    print(interests)  # TODO: Filter this to show interests with matching user IDs
+
+
+def receive_intent_messages():
+    response = requests.get('http://localhost:8080/api/v1/intent/')
+    if not response.ok:
+        print(f'\n{Fore.LIGHTRED_EX}[HTTP ERROR] Could not retrieve trip data!\n')
+        return
+
+    response_json = json.loads(response.content)
+    for i in response_json:
+        intent_data = i.split('&')
+        intent = []
+        for i in intent_data:
+            intent_values = i.split('=')
+            intent.append(intent_values)
+
+        intent_dict = {
+            'organised_by': intent[0][1],
+            'interested_user': intent[1][1],
+            'message_id': intent[2][1]
+        }
+
+        intent_json = json.dumps(intent_dict)
+        if intent_json in proposals:
+            pass
+        else:
+            interests.append(intent_json)
+    display_interests()
+
+
 def main():
     print(Fore.LIGHTGREEN_EX + 'Welcome to the travel service client!')
 
@@ -172,6 +207,8 @@ def main():
             retrieve_proposals()
         elif user_input == '4':
             declare_intent()
+        elif user_input == '5':
+            receive_intent_messages()
         elif user_input == '6':
             print(f'\n{Fore.LIGHTMAGENTA_EX}Bye!\n')
             break
