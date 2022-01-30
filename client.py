@@ -156,7 +156,6 @@ def declare_intent():
 def display_interests():
     print(f'\n{Fore.LIGHTMAGENTA_EX}Interested users:\n')
 
-    # TODO: Filter this to show interests with matching user IDs
     for intent in interests:
         intent_dict = json.loads(intent)
         organised_by = intent_dict.get('organised_by')
